@@ -1,8 +1,8 @@
 SOURCES:=$(wildcard *.c)
 OBJS:=$(patsubst %.c,%.o,$(SOURCES))
-ELF:=server
+ELF:=md5
 CC:=gcc
-CFLAGS:=-D DEBUG -pthread
+CFLAGS:=-D DEBUG -pthread -lcrypto
 $(ELF):$(OBJS)
 	gcc $^ -o $@ $(CFLAGS)
 clean:

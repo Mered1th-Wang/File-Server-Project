@@ -37,4 +37,14 @@
 	{printf("LINE:%d ", __LINE__);fflush(stdout);perror(funcName);return -1;}}
 #define THREAD_ERROR_CHECK(ret,funcName) {if(ret!=0) \
 	{printf("%s:%s\n",funcName,strerror(ret));return -1;}}
+
+typedef struct train{
+    int option;
+    int dataLen;
+    char buf[1000];
+}Train_t;
+
+
 int recvCycle(int, void*, int);
+int downloadFile(int, char*);
+int tcpInit_client(int*, char*, char*);
