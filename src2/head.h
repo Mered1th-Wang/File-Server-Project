@@ -2,6 +2,7 @@
 #define __HEAD_H__
 #include <sys/sendfile.h>
 #include <errno.h>
+#include <mysql/mysql.h>
 #include <sys/epoll.h>
 #include <netdb.h>
 #include <sys/socket.h>

@@ -1,16 +1,26 @@
 #include "function.h"
 
-//IP PORT 
-int main(int argc,char* argv[])
+int main()
 {
-	ARGS_CHECK(argc,3);
 	int socketFd;
     int ret;
     char commond[20];
     char buf[20];
-    ret = tcpInit_client(&socketFd, argv[1], argv[2]);
-    ERROR_CHECK(ret, -1, "tcpInit_client");
     Train_t train;
+    char ip[50] = {0};
+    char port[10] = {0};
+    FILE *config;
+    config = fopen("../conf/client.conf", "r");
+    ERROR_CHECK(fopen, NULL, "fopen");
+    fscanf(config, "%s%s", ip, port);
+    ret = tcpInit_client(&socketFd, ip, port);
+    ERROR_CHECK(ret, -1, "tcpInit_client");
+    
+    ret = login_client(socketFd);
+    ERROR_CHECK(ret, -1, "login_client");
+
+    printf("Please enter the commond or input \"quit\" to exit\n");
+    
     while(1){
         memset(commond, 0, sizeof(commond));
         scanf("%s", commond);

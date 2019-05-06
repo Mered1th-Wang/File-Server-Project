@@ -2,24 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <shadow.h>
-#include <errno.h>
-#include <crypt.h>
-void getsalt(char *salt,char* passwd)
-{
-	int i,j;
-	for(i=0,j=0;passwd[i]&&j!=3;i++)
-	{
-		if(passwd[i]=='$')
-		{
-			++j;
-		}
-	}
-	strncpy(salt,passwd,i-1);
-}
 
-
-int main(int argc,char* argv[])
+int login(int argc,char* argv[])
 {
 	struct spwd *sp;
 	char *passwd;
@@ -36,9 +20,7 @@ int main(int argc,char* argv[])
 		perror("getspnam");
 		return -1;
 	}
-	printf("%-100s\n",sp->sp_pwdp);
-	getsalt(salt,sp->sp_pwdp);
-	puts(salt);
+
 	if(!strcmp(sp->sp_pwdp,crypt(passwd,salt)))	
 	{
 		printf("登录成功\n");
@@ -46,5 +28,4 @@ int main(int argc,char* argv[])
 		printf("登录失败\n");
 	}	
 	return 0;
-
 }

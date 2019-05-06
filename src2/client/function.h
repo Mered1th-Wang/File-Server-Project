@@ -1,3 +1,5 @@
+#ifndef __FUNCTION_H__
+#define __FUNCTION_H__
 #include <sys/epoll.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -29,7 +31,9 @@
 #include <fcntl.h>
 #include <sys/uio.h>
 #include <sys/sendfile.h>
-
+#include <crypt.h>
+#include <shadow.h>
+#include <errno.h>
 #define SIZE 1024*1024
 
 #define ARGS_CHECK(argc,val) {if(argc!=val) \
@@ -51,3 +55,8 @@ int downloadFile(int, char*);
 int uploadFile(int, char*);
 int tcpInit_client(int*, char*, char*);
 int getdir();
+int login_client(int);
+
+
+
+#endif

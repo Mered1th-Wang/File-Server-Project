@@ -18,6 +18,11 @@ typedef struct{
     short start_flag;//未启动为0，启动为1
 }factory_t, *pFactory_t;
 
+typedef struct{
+    char salt[20];
+    char crypt_code[512];
+}UserInfo_t, *pUserInfo_t;
+
 void* thread_func(void*);
 void factory_init(pFactory_t, int, int);
 void factory_start(pFactory_t);
@@ -27,6 +32,7 @@ int tran_file2(int, char*);//upload
 int recvCycle(int, void*, int);
 void removeFile(int, char*);
 int getls(int);
-
+int login_query(char*, pUserInfo_t);
+int login(pNode_t);
 
 #endif

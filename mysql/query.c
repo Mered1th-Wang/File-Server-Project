@@ -14,10 +14,10 @@ int main(int argc,char* argv[])
 	char* server="localhost";
 	char* user="root";
 	char* password="123";
-	char* database="test";//要访问的数据库名称
-	char query[300]="select * from Person where FirstName='";
-	//sprintf(query,"%s%s%s",query, argv[1],"'");
-	strcpy(query,"select * from Person");
+	char* database="NetDisk";//要访问的数据库名称
+	char query[300]="select * from Account where ID='";
+	sprintf(query,"%s%s%s",query, argv[1],"'");
+	//strcpy(query,"select * from Account");
 	puts(query);
 	int t,r;
 	conn=mysql_init(NULL);
@@ -40,11 +40,7 @@ int main(int argc,char* argv[])
 			while((row=mysql_fetch_row(res))!=NULL)
 			{	
 				//printf("num=%d\n",mysql_num_fields(res));//列数
-				for(t=0;t<mysql_num_fields(res);t++)
-				{
-						printf("%8s ",row[t]);
-				}
-				printf("\n");
+				printf("%8s \n",row[3]);
 			}
 		}else{
 			printf("Don't find data\n");

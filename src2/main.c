@@ -18,20 +18,19 @@ void* thread_func(void *p)
         }
         que_get(pq, &pDelete);//从队列里获取发任务的客户端的socketFd
         pthread_mutex_unlock(&pq->mutex);
+        
+        login(pDelete);
+
         while(1){
             int dataLen, option;
             char buf[512] = {0};
             ret = recvCycle(pDelete->new_fd, &train, 4);//接收命令
             if(-1 == ret) break;
             option = train.dataLen;
-            if(4 == option){
-                //接收文件名
-                recvCycle(pDelete->new_fd, &dataLen, 4);
-                recvCycle(pDelete->new_fd, buf, dataLen);
-                tran_file(pDelete->new_fd, buf);//发文件
+            if(1 == option){
+                
             }
             else if(2 == option){
-                printf("%d\n", option);
                 getls(pDelete->new_fd);
             }
             else if(3 == option){
@@ -40,6 +39,12 @@ void* thread_func(void *p)
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 tran_file2(pDelete->new_fd, buf);//接文件
+            }
+            else if(4 == option){
+                //接收文件名
+                recvCycle(pDelete->new_fd, &dataLen, 4);
+                recvCycle(pDelete->new_fd, buf, dataLen);
+                tran_file(pDelete->new_fd, buf);//发文件
             }
             else if(5 == option){
                 //接收文件名
@@ -74,9 +79,8 @@ void sigfunc_exit(int sigNum){
     exit(0);
 }
 
-int main(int argc, char** argv)
+int main()
 {
-	ARGS_CHECK(argc, 5);
     pipe(exit_fds);
     while(fork()){
         //close(exit_fds[0]);
@@ -84,15 +88,20 @@ int main(int argc, char** argv)
         wait(NULL);
     }
     close(exit_fds[1]);
-    //IP PORT THREAD_NUM CAPACITY
-	factory_t f;
-	int thread_num = atoi(argv[3]);
-	int capacity = atoi(argv[4]);
+    char ip[100] = {0};
+    char port[10] = {0};
+    int thread_num;
+    int capacity;
+    FILE *config;
+    config = fopen("./conf/server.conf", "r");
+    ERROR_CHECK(config, NULL, "fopen");
+    fscanf(config, "%s%s%d%d", ip, port, &thread_num, &capacity);
+    factory_t f;
 	factory_init(&f, thread_num, capacity);
 	factory_start(&f);//创建线程
     int sfd;
     pque_t pq = &f.que;//锁在f里，为方便操作，定义 一个pque_t pq指向f.que
-    tcpInit(&sfd, argv[1], argv[2], thread_num); //tcp listen;
+    tcpInit(&sfd, ip, port, thread_num); //tcp listen;
     
     int epfd = epoll_create(1);
     struct epoll_event event, evs[2];

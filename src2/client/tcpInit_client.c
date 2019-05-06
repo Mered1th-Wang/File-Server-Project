@@ -13,7 +13,6 @@ int tcpInit_client(int *sfd, char *ip, char *port){
 	ret = connect(socketFd, (struct sockaddr*)&ser, sizeof(ser));
 	ERROR_CHECK(ret, -1, "connect");
 	system("clear");
-    printf("Please enter the commond or input \"quit\" to exit\n");
     *sfd = socketFd;
     return 0;
 }
