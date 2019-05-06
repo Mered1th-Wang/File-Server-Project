@@ -1,9 +1,0 @@
-SOURCES:=$(wildcard *.c)
-OBJS:=$(patsubst %.c,%.o,$(SOURCES))
-ELF:=server
-CC:=gcc
-CFLAGS:=-D DEBUG -pthread
-$(ELF):$(OBJS)
-	gcc $^ -o $@ $(CFLAGS)
-clean:
-	rm -rf $(OBJS) $(ELF)
