@@ -3,6 +3,7 @@
 5.3 
 
 数据库设计：
+源码在srcX文件夹，X以日期递增。
 
 1. 文件池——复合主键，但code需要自增又不能加入primary，solution?
 
@@ -26,6 +27,7 @@ create table Account( ID int NOT NULL AUTO_INCREMENT,
 ```
 
 5.4 数据库设计
+
 账户
 | Account | CREATE TABLE `Account` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
@@ -48,4 +50,6 @@ create table Account( ID int NOT NULL AUTO_INCREMENT,
   CONSTRAINT `FILE_ibfk_1` FOREIGN KEY (`belong`) REFERENCES `Account` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
 
-pwd显示目录，dup机制？
+5.5 一期功能设计
+
+16:36 除了cd命令已完成一期功能，下面开始链接数据库, 密码验证。
