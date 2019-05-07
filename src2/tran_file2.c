@@ -3,21 +3,16 @@
 
 int tran_file2(int newFd, char *FILENAME){
 	int dataLen, ret;
-    char buf[1000]={0};
-#ifdef DEBUG
-    printf("go in downloadFile\n");
-#endif
+    char buf[1000] = {0};
+    
     //接收文件名
     recvCycle(newFd, &dataLen, 4);
-    //printf("recvFile dataLen = %d\n",dataLen);//4 file
     recvCycle(newFd, buf, dataLen);
-    //printf("recvFile buf = %s\n", buf);
     
+    char pathName[50] = {0};
+    sprintf(pathName, "%s%s", "./file/", FILENAME);
     char fileName[256] = {0};
     strcpy(fileName, buf);
-#ifdef DEBUG
-    printf("recvFile fileName = %s\n", fileName);
-#endif
     int fd = open(FILENAME, O_CREAT|O_RDWR, 0666);
 	ERROR_CHECK(fd, -1, "open");
     
@@ -42,19 +37,14 @@ int tran_file2(int newFd, char *FILENAME){
     }
     else {
         while(1){
-            //printf("count1 = %d\n", count);
-            //printf("dataLen = %d\n", dataLen);
             ret = recvCycle(newFd, &dataLen, 4);
             CHECK_recvCycle(ret, -1);
-            //printf("count2 = %d\n", count);
             if(dataLen > 0){
                 ret = recvCycle(newFd, buf, dataLen);
                 CHECK_recvCycle(ret, -1);
                 write(fd, buf, dataLen);
             }
-            else {
-                break;
-            }
+            else break;
         }
         close(fd);
     }

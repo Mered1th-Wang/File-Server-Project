@@ -32,8 +32,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <fcntl.h>
-
-
+#include <memory.h>
 
 #define ARGS_CHECK(argc,val) {if(argc!=val) \
 	{printf("error args\n");return -1;}}

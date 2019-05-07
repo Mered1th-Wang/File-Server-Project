@@ -2,8 +2,9 @@
 #define __FACTORY_H__
 #include "head.h"
 #include "work_que.h"
+#include "md5.h"
 
-#define SIZE 1024*1024
+#define SIZE 1024*1024*100
 
 typedef struct{//火车头协议
     int dataLen; 
@@ -27,12 +28,15 @@ void* thread_func(void*);
 void factory_init(pFactory_t, int, int);
 void factory_start(pFactory_t);
 int tcpInit(int*, char*, char*, int);
-int tran_file(int, char*);//download
+int tran_file(int, char*, int);//download
 int tran_file2(int, char*);//upload
 int recvCycle(int, void*, int);
 void removeFile(int, char*);
 int getls(int);
 int login_query(char*, pUserInfo_t);
-int login(pNode_t);
+int login(pNode_t, char*);
+int gettime(char*, int);
+int Compute_file_md5(const char *, char *);
+
 
 #endif

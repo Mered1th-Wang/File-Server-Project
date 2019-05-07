@@ -1,5 +1,9 @@
 #include "factory.h"
 
+const char *opt[] = {"", "cd", "ls", "puts", "gets", "remove", "pwd", "wrong input"};
+char timeNow[50] = {0};
+char name[50] = {0};
+
 void* thread_func(void *p)
 {
     int ret;
@@ -18,8 +22,7 @@ void* thread_func(void *p)
         }
         que_get(pq, &pDelete);//从队列里获取发任务的客户端的socketFd
         pthread_mutex_unlock(&pq->mutex);
-        
-        login(pDelete);
+        login(pDelete, name);
 
         while(1){
             int dataLen, option;
@@ -27,43 +30,62 @@ void* thread_func(void *p)
             ret = recvCycle(pDelete->new_fd, &train, 4);//接收命令
             if(-1 == ret) break;
             option = train.dataLen;
+            gettime(timeNow, 50);
+            printf("%s -> excuted the commond, \"", name);
             if(1 == option){
                 
             }
             else if(2 == option){
+                printf("%s\"\n", opt[option]);
                 getls(pDelete->new_fd);
             }
             else if(3 == option){
                 //接收文件名
+                printf("%s ", opt[option]);
                 ret = recvCycle(pDelete->new_fd, &dataLen, 4);
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
+                printf("%s\"\n", buf);
                 tran_file2(pDelete->new_fd, buf);//接文件
             }
             else if(4 == option){
                 //接收文件名
+                printf("%s ", opt[option]);
+                int offset;
                 recvCycle(pDelete->new_fd, &dataLen, 4);
                 recvCycle(pDelete->new_fd, buf, dataLen);
-                tran_file(pDelete->new_fd, buf);//发文件
+                printf("%s\"\n", buf);
+
+                //接收偏移量
+                recvCycle(pDelete->new_fd, &offset, 4);
+                
+                tran_file(pDelete->new_fd, buf, offset);//发文件
             }
             else if(5 == option){
                 //接收文件名
+                printf("%s ", opt[option]);
                 ret = recvCycle(pDelete->new_fd, &dataLen, 4);
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
+                printf("%s\"\n", buf);
                 removeFile(pDelete->new_fd, buf);//删除文件
             }
             else if(6 == option){
+                printf("%s\" \n", opt[option]);
                 memset(buf, 0, sizeof(buf));
                 getcwd(buf, sizeof(buf));
                 train.dataLen = strlen(buf);
+                buf[train.dataLen] = '\0';
+                train.dataLen++;
                 strcpy(train.buf, buf);
                 send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
-            else printf("wrong!\n");
+            else printf("wrong input!\n");
         }
         free(pDelete);
         pDelete = NULL;
+        gettime(timeNow, 50);
+        printf("%s connection closed.\n", name);
     }
 }
 
@@ -87,7 +109,13 @@ int main()
         signal(SIGUSR1, sigfunc_exit);//设定退出机制
         wait(NULL);
     }
+    printf("\n");
+    int logfd = open("log", O_CREAT|O_RDWR|O_APPEND, 0666);
+    //dup2(logfd, STDOUT_FILENO);
+    //dup2(logfd, STDERR_FILENO);
     close(exit_fds[1]);
+    gettime(timeNow, 50);
+    printf("Server startup.\n");
     char ip[100] = {0};
     char port[10] = {0};
     int thread_num;

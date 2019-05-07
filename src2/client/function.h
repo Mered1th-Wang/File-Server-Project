@@ -34,7 +34,7 @@
 #include <crypt.h>
 #include <shadow.h>
 #include <errno.h>
-#define SIZE 1024*1024
+#define SIZE 1024*1024*100
 
 #define ARGS_CHECK(argc,val) {if(argc!=val) \
 	{printf("error args\n");return -1;}}
@@ -51,7 +51,7 @@ typedef struct train{
 
 
 int recvCycle(int, void*, int);
-int downloadFile(int, char*);
+int downloadFile(int, char*, off_t);
 int uploadFile(int, char*);
 int tcpInit_client(int*, char*, char*);
 int getdir();

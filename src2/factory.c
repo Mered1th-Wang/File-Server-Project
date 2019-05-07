@@ -29,26 +29,34 @@ int getls(int newFd){
     Train_t train;
     memset(&train, 0, sizeof(Train_t));
     DIR *dir;
-    dir = opendir("../src2");
+    dir = opendir("../src2/file");
     ERROR_CHECK(dir, NULL, "opendir");
     struct dirent *p;
     int count = 0;
     while((p = readdir(dir))){
         if(strcmp(p->d_name, ".") != 0 && strcmp(p->d_name, "..") != 0){
-            if(strlen(train.buf) > 0){
-                sprintf(train.buf, "%s%s%s", train.buf, " ", p->d_name);
-                count++;
+            if(count == 5){
+                sprintf(train.buf, "%s%s", train.buf, "\n");
+                count = 0;
             }
-            else{ 
-                sprintf(train.buf, "%s%s", train.buf, p->d_name);
-                count++;
-            }
+            sprintf(train.buf, "%s%s%-15s", train.buf, " ", p->d_name);
+            count++;
         }
     }
-    printf("%s\n", train.buf);
     closedir(dir);
     train.dataLen = strlen(train.buf);
+    train.buf[train.dataLen] = '\0';
+    train.dataLen += 1;
     int ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
+    return 0;
+}
+
+int gettime(char timeNow[], int size){
+    memset(timeNow, 0, size);
+    time_t now;
+    now = time(NULL);
+    ctime_r(&now, timeNow);
+    printf("\n%s", timeNow);
     return 0;
 }
