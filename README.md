@@ -86,4 +86,6 @@ create table Account( ID int NOT NULL AUTO_INCREMENT,
 2. 日志系统，将客户端用dup机制输出重定向至文件
 3. 小文件断点续传功能，在gets文件时先看本地是否有该文件，用stat读取文件大小，结合lseek偏移接收文件。
 （大文件在client端通过ftruncate创建文件大小，不能用该方法，需要将recv的值保存，保存至数据库/新文件？大文件断点续传未完成）
-4. 服务端文件以md5命名存储。
+4. 差cd和大文件断点续传，完成三期功能
+
+写完及时git，今天晚上血的教训，做了很多无用功，直接把main.c用别的文件覆盖了！

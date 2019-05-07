@@ -1,6 +1,6 @@
 #include "factory.h"
 
-int login(pNode_t pDelete, char *name)
+int login(pNode_t pDelete, char *name, pDir current)
 {
     Train_t train;
     UserInfo_t info;
@@ -28,6 +28,11 @@ int login(pNode_t pDelete, char *name)
         printf("%s login succeeded.\n", name);
         train.dataLen = 1;
         send(pDelete->new_fd, &train, 4, 0);
+        memset(current, 0, sizeof(Dir));
+        getcwd(current->pathNow, sizeof(current->pathNow));
+        //printf("getcwd ok!\n");
+        sprintf(current->pathNow, "%s%s%s%s%s", current->pathNow, "/", "file/", name, "/");
+        //printf("current->pathNow = %s\n", current->pathNow);
     }
     else{
         gettime(timeNow, 50);

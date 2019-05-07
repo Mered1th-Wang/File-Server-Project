@@ -11,6 +11,7 @@ void* thread_func(void *p)
     pque_t pq = &pf->que;
     pNode_t pDelete;
     Train_t train;
+    Dir current;
     while(1){
         pthread_mutex_lock(&pq->mutex);
         if(!pq->que_size){
@@ -22,8 +23,8 @@ void* thread_func(void *p)
         }
         que_get(pq, &pDelete);//从队列里获取发任务的客户端的socketFd
         pthread_mutex_unlock(&pq->mutex);
-        login(pDelete, name);
-
+        login(pDelete, name, &current);
+        printf("%s\n", current.pathNow);
         while(1){
             int dataLen, option;
             char buf[512] = {0};
@@ -37,7 +38,7 @@ void* thread_func(void *p)
             }
             else if(2 == option){
                 printf("%s\"\n", opt[option]);
-                getls(pDelete->new_fd);
+                getls(pDelete->new_fd, name, current);
             }
             else if(3 == option){
                 //接收文件名
@@ -46,20 +47,18 @@ void* thread_func(void *p)
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-                tran_file2(pDelete->new_fd, buf);//接文件
+                tran_file2(pDelete->new_fd, buf, current);//接文件
             }
             else if(4 == option){
                 //接收文件名
                 printf("%s ", opt[option]);
-                int offset;
                 recvCycle(pDelete->new_fd, &dataLen, 4);
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
 
                 //接收偏移量
-                recvCycle(pDelete->new_fd, &offset, 4);
-                
-                tran_file(pDelete->new_fd, buf, offset);//发文件
+                recvCycle(pDelete->new_fd, &dataLen, 4);
+                tran_file(pDelete->new_fd, buf, dataLen, current);//发文件
             }
             else if(5 == option){
                 //接收文件名
@@ -68,16 +67,17 @@ void* thread_func(void *p)
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-                removeFile(pDelete->new_fd, buf);//删除文件
+                removeFile(pDelete->new_fd, buf, current);//删除文件
             }
             else if(6 == option){
                 printf("%s\" \n", opt[option]);
                 memset(buf, 0, sizeof(buf));
-                getcwd(buf, sizeof(buf));
-                train.dataLen = strlen(buf);
+                //getcwd(buf, sizeof(buf));
+                //sprintf(buf, "%s%s%s%s", buf, "/", name, "/");
+                train.dataLen = strlen(current.pathNow);
+                strcpy(train.buf, current.pathNow);
                 buf[train.dataLen] = '\0';
                 train.dataLen++;
-                strcpy(train.buf, buf);
                 send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
             else printf("wrong input!\n");
@@ -110,7 +110,8 @@ int main()
         wait(NULL);
     }
     printf("\n");
-    int logfd = open("log", O_CREAT|O_RDWR|O_APPEND, 0666);
+    int logfd;
+    logfd = open("log", O_CREAT|O_RDWR|O_APPEND, 0666);
     //dup2(logfd, STDOUT_FILENO);
     //dup2(logfd, STDERR_FILENO);
     close(exit_fds[1]);

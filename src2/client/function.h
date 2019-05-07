@@ -58,5 +58,4 @@ int getdir();
 int login_client(int);
 
 
-
 #endif

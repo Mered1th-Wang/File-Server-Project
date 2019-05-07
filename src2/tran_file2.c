@@ -1,7 +1,7 @@
 #include "factory.h"
 #define CHECK_recvCycle(ret, retval) {if(ret == retval) {printf("\n LINE = %d, Server is update!\n", __LINE__); break;}} 
 
-int tran_file2(int newFd, char *FILENAME){
+int tran_file2(int newFd, char *FILENAME, Dir current){
 	int dataLen, ret;
     char buf[1000] = {0};
     
@@ -9,11 +9,9 @@ int tran_file2(int newFd, char *FILENAME){
     recvCycle(newFd, &dataLen, 4);
     recvCycle(newFd, buf, dataLen);
     
-    char pathName[50] = {0};
-    sprintf(pathName, "%s%s", "./file/", FILENAME);
-    char fileName[256] = {0};
-    strcpy(fileName, buf);
-    int fd = open(FILENAME, O_CREAT|O_RDWR, 0666);
+    char pathName[100] = {0};
+    sprintf(pathName, "%s%s", current.pathNow, FILENAME);
+    int fd = open(pathName, O_CREAT|O_RDWR, 0666);
 	ERROR_CHECK(fd, -1, "open");
     
     //接文件大小

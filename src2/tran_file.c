@@ -1,15 +1,19 @@
 #include "factory.h"
 
-int tran_file(int newFd, char* FILENAME, int offset){
+int tran_file(int newFd, char* FILENAME, int offset, Dir current){
     Train_t train;
     int ret;
-    char pathName[50] = {0};
-    sprintf(pathName, "%s%s", "./file/", FILENAME);
+    char pathName[100] = {0};
+    sprintf(pathName, "%s%s", current.pathNow, FILENAME);
+    printf("open %s\n", pathName);
     int fd = open(pathName, O_RDONLY);
+    ERROR_CHECK(fd, -1, "open");
+    printf("offset = %d\n", offset);
     lseek(fd, offset, SEEK_SET);
 
     struct stat buf;
     fstat(fd, &buf);
+    printf("buf.st_size = %ld\n", buf.st_size);
     if(offset == buf.st_size){
         train.dataLen = 0;
     }
@@ -20,7 +24,8 @@ int tran_file(int newFd, char* FILENAME, int offset){
     //发文件大小
     ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
-    
+    //printf("send filesize = %d\n", train.dataLen);
+
     if(0 == train.dataLen){
         return 0;
     }

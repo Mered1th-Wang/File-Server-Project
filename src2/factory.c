@@ -16,20 +16,24 @@ void factory_start(pFactory_t pf){
     }
 }
 
-
-void removeFile(int newFd, char* FILENAME)
+void removeFile(int newFd, char* FILENAME, Dir current)
 {
     Train_t train;
-    train.dataLen = unlink(FILENAME);
+    char pathname[100] = {0};
+    sprintf(pathname, "%s%s%s", current.pathNow, "/", FILENAME);
+    train.dataLen = unlink(pathname);
     send(newFd, &train, 4, 0);
     return ;
 }
 
-int getls(int newFd){
+int getls(int newFd, char * name, Dir current){
     Train_t train;
     memset(&train, 0, sizeof(Train_t));
     DIR *dir;
-    dir = opendir("../src2/file");
+    char pathname[500] = {0};
+    //sprintf(pathname, "%s%s", "../src2/file/", name);
+    sprintf(pathname, "%s%s%s", current.pathNow, "../", name);
+    dir = opendir(pathname);
     ERROR_CHECK(dir, NULL, "opendir");
     struct dirent *p;
     int count = 0;

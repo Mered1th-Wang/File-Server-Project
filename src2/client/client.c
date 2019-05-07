@@ -6,6 +6,7 @@ int main()
     int ret;
     char commond[20];
     char buf[20];
+    //char md5sum[33];
     Train_t train;
     char ip[50] = {0};
     char port[10] = {0};
@@ -58,6 +59,9 @@ int main()
             train.dataLen = 3;
             ret = send(socketFd, &train, 4, 0);
             ERROR_CHECK(ret, -1, "send");
+            //memset(md5sum, 0, sizeof(md5sum));
+            //Compute_file_md5(buf, md5sum);
+            //printf("%s\n", md5sum);
             train.dataLen = strlen(buf);
             strcpy(train.buf, buf);
             ret = send(socketFd, &train, 4 + train.dataLen, 0);//文件名

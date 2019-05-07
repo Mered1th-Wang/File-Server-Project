@@ -2,10 +2,10 @@
 #define CHECK_recvCycle(ret, retval) {if(ret == retval) {printf("\n LINE = %d, Server is update!\n", __LINE__); break;}} 
 
 int downloadFile(int socketFd, char *name, off_t offset){
-    //printf("offset = %ld\n", offset); 上次缓存的大小
+    printf("offset = %ld\n", offset); //上次缓存的大小
     int dataLen, ret;
     char buf[1000]={0};
-
+    printf("%s\n", name);
     int fd = open(name, O_CREAT|O_RDWR, 0666);
 	ERROR_CHECK(fd, -1, "open");
     lseek(fd, offset, SEEK_SET);
@@ -15,7 +15,7 @@ int downloadFile(int socketFd, char *name, off_t offset){
     recvCycle(socketFd, &dataLen, 4);
     //printf("downloadFile filesize dataLen = %d\n", dataLen);
 	recvCycle(socketFd, &fileSize, dataLen);
-    //printf("dataLen = %d, fileSize = %ld\n", dataLen, fileSize);   
+    printf("dataLen = %d, fileSize = %ld\n", dataLen, fileSize);   
     if(fileSize == 0) return 0;
 
     //接受文件内容
@@ -45,9 +45,7 @@ int downloadFile(int socketFd, char *name, off_t offset){
                 CHECK_recvCycle(ret, -1);
                 write(fd, buf, dataLen);
             }
-            else {
-                break;
-            }
+            else  break;
         }
         close(fd);
     }
