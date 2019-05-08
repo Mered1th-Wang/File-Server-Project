@@ -32,6 +32,8 @@ int main()
         else if(!strcmp(commond, "cd")){
             memset(buf, 0, sizeof(buf));
             scanf("%s", buf);
+            char tempName[100] = {0};
+            strcpy(tempName, buf);
             train.dataLen = 1;
             ret = send(socketFd, &train, 4, 0);
             ERROR_CHECK(ret, -1, "send");
@@ -46,10 +48,15 @@ int main()
                 printf("Failed! Already root directory.\n");
                 printf("---------------------------------\n");
             }
-            else{
+            else if(train.dataLen == -2){
+                printf("Failed! %s is not directory.\n", tempName);
+                printf("---------------------------------\n");
                 //pwd
             }
-
+            else{
+                printf("cd finish!\n");
+                printf("---------------------------------\n");
+            } 
         }
         else if(!strcmp(commond, "gets")){
             memset(buf, 0, sizeof(buf));
@@ -62,15 +69,8 @@ int main()
             strcpy(train.buf, buf);
             ret = send(socketFd, &train, 4 + train.dataLen, 0);//文件名
             ERROR_CHECK(ret, -1, "send");
-            
-            struct stat filebuf;
-            ret = stat(buf, &filebuf);
-            if(-1 == ret) train.dataLen = 0;
-            else train.dataLen = filebuf.st_size;
-            ret = send(socketFd, &train, 4, 0);// 发偏移量
-            ERROR_CHECK(ret, -1, "send");
 
-            ret = downloadFile(socketFd, buf, train.dataLen);
+            ret = downloadFile(socketFd, buf);
             if(!ret) printf("gets %s OK!\n", buf);
             else printf("gets %s FAILED!\n", buf);                
             printf("---------------------------------\n");
@@ -108,14 +108,16 @@ int main()
             scanf("%s", buf);
             train.dataLen = 5;
             ret = send(socketFd, &train, 4, 0);
-            ERROR_CHECK(ret, -1, "send");
+            ERROR_CHECK(ret, -1, "send");//发命令
+
             train.dataLen = strlen(buf);
             strcpy(train.buf, buf);
-            ret = send(socketFd, &train, 4 + train.dataLen, 0);//文件名
-            ERROR_CHECK(ret, -1, "send");
+            ret = send(socketFd, &train, 4 + train.dataLen, 0);
+            ERROR_CHECK(ret, -1, "send");//发文件名
+            
             recvCycle(socketFd ,&train, 4);
             if(0 == train.dataLen) printf("remove %s OK!\n", buf);
-            else printf("remove %s OK!\n", buf);
+            else printf("remove %s failed!\n", buf);
             printf("---------------------------------\n");
         }
         else if(!strcmp(commond, "ls")){
@@ -133,6 +135,7 @@ int main()
             ret = send(socketFd, &train, 4, 0);
             ERROR_CHECK(ret, -1, "send");
             printf("input wrong!\n");
+            setbuf(stdin, NULL);
             printf("---------------------------------\n");
         }
     }

@@ -51,7 +51,7 @@ typedef struct train{
 
 
 int recvCycle(int, void*, int);
-int downloadFile(int, char*, off_t);
+int downloadFile(int, char*);
 int uploadFile(int, char*);
 int tcpInit_client(int*, char*, char*);
 int getdir();

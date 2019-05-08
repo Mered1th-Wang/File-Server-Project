@@ -63,10 +63,8 @@ void* thread_func(void *p)
                 recvCycle(pDelete->new_fd, &dataLen, 4);
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-
-                //接收偏移量
-                recvCycle(pDelete->new_fd, &dataLen, 4);
-                tran_file(pDelete->new_fd, buf, dataLen, current);//发文件
+                
+                tran_file(pDelete->new_fd, buf, current);//发文件
             }
             else if(5 == option){
                 //接收文件名

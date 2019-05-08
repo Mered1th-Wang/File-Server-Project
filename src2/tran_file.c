@@ -1,18 +1,41 @@
 #include "factory.h"
 
-int tran_file(int newFd, char* FILENAME, int offset, Dir current){
+int tran_file(int newFd, char* FILENAME, Dir current){
     Train_t train;
     int ret;
+    int offset;
     char pathName[100] = {0};
     sprintf(pathName, "%s%s", current.pathNow, FILENAME);
     printf("open %s\n", pathName);
+    
     int fd = open(pathName, O_RDONLY);
-    ERROR_CHECK(fd, -1, "open");
+    struct stat buf;
+    
+    if(-1 == fd){
+        perror("open");
+        train.dataLen = -1;
+        ret = send(newFd, &train, 4, 0);
+        ERROR_CHECK(ret, -1, "send");
+        return -1;
+    }
+
+    fstat(fd, &buf);
+    if(S_ISDIR(buf.st_mode)){
+        train.dataLen = -2;
+        ret = send(newFd, &train, 4, 0);
+        ERROR_CHECK(ret, -1, "send");
+        return -1;
+    }
+    train.dataLen = 0;
+    ret = send(newFd, &train, 4, 0);
+    ERROR_CHECK(ret, -1, "send");
+    
+    //接收偏移量
+    recvCycle(newFd, &offset, 4);
+
     printf("offset = %d\n", offset);
     lseek(fd, offset, SEEK_SET);
 
-    struct stat buf;
-    fstat(fd, &buf);
     printf("buf.st_size = %ld\n", buf.st_size);
     if(offset == buf.st_size){
         train.dataLen = 0;

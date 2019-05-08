@@ -16,6 +16,20 @@ void factory_start(pFactory_t pf){
     }
 }
 
+int judgeDir(char* name)
+{
+    struct stat buf;
+    stat(name, &buf);
+    if(S_ISDIR(buf.st_mode)){
+        //printf("dir\n");
+        return 1;
+    }
+    else{
+        //printf("file\n");
+        return 0;
+    }
+}
+
 void removeFile(int newFd, char* FILENAME, Dir current)
 {
     Train_t train;
@@ -63,6 +77,11 @@ int getls(int newFd, Dir current){
     int count = 0;
     while((p = readdir(dir))){
         if(strcmp(p->d_name, ".") != 0 && strcmp(p->d_name, "..") != 0){
+            if(count == 0){
+                sprintf(train.buf, "%s%-15s", train.buf, p->d_name);
+                count++;
+                continue;
+            }
             if(count == 5){
                 sprintf(train.buf, "%s%s", train.buf, "\n");
                 count = 0;
@@ -93,8 +112,7 @@ int getcd(int newFd, char* buf, pDir current){
     Train_t train;
     int ret;
     memset(&train, 0, sizeof(train));
-    printf("%s\n", current->pathNow);
-    printf("buf = %s\n", buf);
+    //printf("%s\n", current->pathNow);
     int len = strlen(current->pathNow);
     int i, count = 0;
     if(!strcmp(buf, "..")){
@@ -103,7 +121,6 @@ int getcd(int newFd, char* buf, pDir current){
             train.dataLen = -1;
         }
         else{
-            printf("ddd\n");
             for(i = len - 1; i >= 0 ; i--){
                 if(current->pathNow[i] == '/'){
                     count++;
@@ -112,14 +129,24 @@ int getcd(int newFd, char* buf, pDir current){
             }
             i++;
             current->pathNow[i] = '\0';
+            current->lvl--;
             train.dataLen = 0;
         }
     }
     else {
-        printf("sss\n");
-        sprintf(current->pathNow, "%s%s%s", current->pathNow, buf, "/");
-        current->lvl++;
-        train.dataLen = 0;
+        char tempPath[500] = {0};
+        strcpy(tempPath, current->pathNow);
+        sprintf(tempPath, "%s%s%s", tempPath, buf, "/");
+        printf("tempPath = %s\n", tempPath);
+        if(judgeDir(tempPath)) {
+            printf("dir!\n");
+            sprintf(current->pathNow, "%s%s%s", current->pathNow, buf, "/");
+            current->lvl++;
+            train.dataLen = 0;
+        }
+        else{
+            train.dataLen = -2;
+        }
     }
     ret = send(newFd, &train, 4, 0);
     ERROR_CHECK(ret, -1, "send");

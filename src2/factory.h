@@ -32,7 +32,7 @@ void* thread_func(void*);
 void factory_init(pFactory_t, int, int);
 void factory_start(pFactory_t);
 int tcpInit(int*, char*, char*, int);
-int tran_file(int, char*, int, Dir);//download
+int tran_file(int, char*, Dir);//download
 int tran_file2(int, char*, Dir);//upload
 int recvCycle(int, void*, int);
 void removeFile(int, char*, Dir);
@@ -42,5 +42,6 @@ int login(pNode_t, char*, pDir);
 int gettime(char*, int);
 int Compute_file_md5(const char *, char *);
 int getcd(int, char*, pDir);
+int judgeDir(char*);
 
 #endif
