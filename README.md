@@ -89,3 +89,6 @@ create table Account( ID int NOT NULL AUTO_INCREMENT,
 4. 差cd和大文件断点续传，完成三期功能
 
 写完及时git，今天晚上血的教训，做了很多无用功，直接把main.c用别的文件覆盖了！
+
+5.8
+除了文件未连数据库，大文件断点续传， 三期功能全部完成。17:08
