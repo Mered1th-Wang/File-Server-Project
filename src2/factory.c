@@ -10,7 +10,7 @@ void factory_init(pFactory_t pf, int thread_num, int capacity){
 
 void factory_start(pFactory_t pf){
     int i;
-    pf->start_flag = 1;
+    //  pf->start_flag = 1;
     for(i = 0;i < pf->thread_num; i++){
         pthread_create(pf->pth_arr + i, NULL, thread_func, pf);
     }
@@ -26,13 +26,37 @@ void removeFile(int newFd, char* FILENAME, Dir current)
     return ;
 }
 
-int getls(int newFd, char * name, Dir current){
+int getls(int newFd, Dir current){
     Train_t train;
     memset(&train, 0, sizeof(Train_t));
     DIR *dir;
     char pathname[500] = {0};
     //sprintf(pathname, "%s%s", "../src2/file/", name);
-    sprintf(pathname, "%s%s%s", current.pathNow, "../", name);
+    int len = strlen(current.pathNow), i, charcount = 0;
+    char last[100] = {0};
+    int j = 0;
+    puts(current.pathNow);
+    for(i = len - 1; i >= 0; i--){
+        if(current.pathNow[i] == '/'){
+            charcount++;
+            if(2 == charcount) break;
+        }
+        else{
+            last[j++] = current.pathNow[i];
+        }
+    }
+    printf("last = %s\n", last);
+    len = strlen(last);
+    printf("len = %d\n", len);
+    char c;
+    for(i = 0; i < len / 2; i++){
+        c = last[i];
+        last[i] = last[len - i - 1];
+        last[len - i - 1] = c;
+    }
+    printf("last = %s\n", last);
+    sprintf(pathname, "%s%s%s", current.pathNow, "../", last);
+    puts(pathname);
     dir = opendir(pathname);
     ERROR_CHECK(dir, NULL, "opendir");
     struct dirent *p;
@@ -63,4 +87,41 @@ int gettime(char timeNow[], int size){
     ctime_r(&now, timeNow);
     printf("\n%s", timeNow);
     return 0;
+}
+
+int getcd(int newFd, char* buf, pDir current){
+    Train_t train;
+    int ret;
+    memset(&train, 0, sizeof(train));
+    printf("%s\n", current->pathNow);
+    printf("buf = %s\n", buf);
+    int len = strlen(current->pathNow);
+    int i, count = 0;
+    if(!strcmp(buf, "..")){
+        if(0 == current->lvl) {
+            printf("lvl == 0\n");
+            train.dataLen = -1;
+        }
+        else{
+            printf("ddd\n");
+            for(i = len - 1; i >= 0 ; i--){
+                if(current->pathNow[i] == '/'){
+                    count++;
+                    if(2 == count) break;
+                }
+            }
+            i++;
+            current->pathNow[i] = '\0';
+            train.dataLen = 0;
+        }
+    }
+    else {
+        printf("sss\n");
+        sprintf(current->pathNow, "%s%s%s", current->pathNow, buf, "/");
+        current->lvl++;
+        train.dataLen = 0;
+    }
+    ret = send(newFd, &train, 4, 0);
+    ERROR_CHECK(ret, -1, "send");
+    printf("%s\n", current->pathNow);
 }

@@ -36,10 +36,11 @@ int tran_file(int, char*, int, Dir);//download
 int tran_file2(int, char*, Dir);//upload
 int recvCycle(int, void*, int);
 void removeFile(int, char*, Dir);
-int getls(int, char*, Dir);
+int getls(int, Dir);
 int login_query(char*, pUserInfo_t);
 int login(pNode_t, char*, pDir);
 int gettime(char*, int);
 int Compute_file_md5(const char *, char *);
+int getcd(int, char*, pDir);
 
 #endif

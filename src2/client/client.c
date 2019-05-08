@@ -29,6 +29,28 @@ int main()
             close(socketFd);
             return 0;
         }
+        else if(!strcmp(commond, "cd")){
+            memset(buf, 0, sizeof(buf));
+            scanf("%s", buf);
+            train.dataLen = 1;
+            ret = send(socketFd, &train, 4, 0);
+            ERROR_CHECK(ret, -1, "send");
+
+            train.dataLen = strlen(buf);
+            strcpy(train.buf, buf);
+            ret = send(socketFd, &train, 4 + train.dataLen, 0);//目录名
+            ERROR_CHECK(ret, -1, "send");
+            
+            recvCycle(socketFd, &train, 4);
+            if(train.dataLen == -1){
+                printf("Failed! Already root directory.\n");
+                printf("---------------------------------\n");
+            }
+            else{
+                //pwd
+            }
+
+        }
         else if(!strcmp(commond, "gets")){
             memset(buf, 0, sizeof(buf));
             scanf("%s", buf);

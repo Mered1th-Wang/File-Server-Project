@@ -34,15 +34,22 @@ void* thread_func(void *p)
             gettime(timeNow, 50);
             printf("%s -> excuted the commond, \"", name);
             if(1 == option){
-                
+                printf("%s ", opt[option]);
+                memset(buf, 0, sizeof(buf));
+                ret = recvCycle(pDelete->new_fd, &dataLen, 4);
+                if(-1 == ret) break;
+                recvCycle(pDelete->new_fd, buf, dataLen);
+                printf("%s\"\n", buf);
+                getcd(pDelete->new_fd, buf, &current);
             }
             else if(2 == option){
                 printf("%s\"\n", opt[option]);
-                getls(pDelete->new_fd, name, current);
+                getls(pDelete->new_fd, current);
             }
             else if(3 == option){
                 //接收文件名
                 printf("%s ", opt[option]);
+                memset(buf, 0, sizeof(buf));
                 ret = recvCycle(pDelete->new_fd, &dataLen, 4);
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
@@ -52,6 +59,7 @@ void* thread_func(void *p)
             else if(4 == option){
                 //接收文件名
                 printf("%s ", opt[option]);
+                memset(buf, 0, sizeof(buf));
                 recvCycle(pDelete->new_fd, &dataLen, 4);
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
@@ -63,6 +71,7 @@ void* thread_func(void *p)
             else if(5 == option){
                 //接收文件名
                 printf("%s ", opt[option]);
+                memset(buf, 0, sizeof(buf));
                 ret = recvCycle(pDelete->new_fd, &dataLen, 4);
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
