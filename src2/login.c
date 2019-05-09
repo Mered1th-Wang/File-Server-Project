@@ -22,12 +22,15 @@ int login(pNode_t pDelete, char *name, pDir current)
     recvCycle(pDelete->new_fd, &train.dataLen, 4);
     recvCycle(pDelete->new_fd, &train.buf, train.dataLen);
 
+    int flag;
     if(!strcmp(train.buf, info.crypt_code)){
         gettime(timeNow, 50);
         //printf("client id = %lu, connection succeeded.\n", pthread_self());
         printf("%s login succeeded.\n", name);
-        train.dataLen = 1;
-        send(pDelete->new_fd, &train, 4, 0);
+        flag = 1;
+        train.dataLen = sizeof(flag);
+        memcpy(train.buf, &flag, train.dataLen);
+        send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
         memset(current, 0, sizeof(Dir));
         getcwd(current->pathNow, sizeof(current->pathNow));
         //printf("getcwd ok!\n");
@@ -38,8 +41,10 @@ int login(pNode_t pDelete, char *name, pDir current)
         gettime(timeNow, 50);
         //printf("client id = %lu, connection failed.\n", pthread_self());
         printf("%s login failed.\n", name);
-        train.dataLen = 0;
-        send(pDelete->new_fd, &train, 4, 0);
+        flag = 0;
+        train.dataLen = sizeof(flag);
+        memcpy(train.buf, &flag, train.dataLen);
+        send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
     }
     return 0;
 }

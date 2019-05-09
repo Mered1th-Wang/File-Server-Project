@@ -10,7 +10,7 @@ void factory_init(pFactory_t pf, int thread_num, int capacity){
 
 void factory_start(pFactory_t pf){
     int i;
-    //  pf->start_flag = 1;
+    pf->start_flag = 1;
     for(i = 0;i < pf->thread_num; i++){
         pthread_create(pf->pth_arr + i, NULL, thread_func, pf);
     }
@@ -33,14 +33,17 @@ int judgeDir(char* name)
 void removeFile(int newFd, char* FILENAME, Dir current)
 {
     Train_t train;
+    int flag;
     char pathname[100] = {0};
     sprintf(pathname, "%s%s%s", current.pathNow, "/", FILENAME);
-    train.dataLen = unlink(pathname);
-    send(newFd, &train, 4, 0);
+    flag = unlink(pathname);
+    train.dataLen = sizeof(flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    send(newFd, &train, 4 + train.dataLen, 0);
     return ;
 }
 
-int getls(int newFd, Dir current){
+int getls (int newFd, Dir current){
     Train_t train;
     memset(&train, 0, sizeof(Train_t));
     DIR *dir;
@@ -49,7 +52,7 @@ int getls(int newFd, Dir current){
     int len = strlen(current.pathNow), i, charcount = 0;
     char last[100] = {0};
     int j = 0;
-    puts(current.pathNow);
+    printf("current path: %s\n", current.pathNow);
     for(i = len - 1; i >= 0; i--){
         if(current.pathNow[i] == '/'){
             charcount++;
@@ -70,12 +73,13 @@ int getls(int newFd, Dir current){
     }
     printf("last = %s\n", last);
     sprintf(pathname, "%s%s%s", current.pathNow, "../", last);
-    puts(pathname);
+    printf("open dirname = %s\n", pathname);
     dir = opendir(pathname);
     ERROR_CHECK(dir, NULL, "opendir");
     struct dirent *p;
     int count = 0;
     while((p = readdir(dir))){
+        printf("%s\n", p->d_name);
         if(strcmp(p->d_name, ".") != 0 && strcmp(p->d_name, "..") != 0){
             if(count == 0){
                 sprintf(train.buf, "%s%-15s", train.buf, p->d_name);
@@ -86,7 +90,7 @@ int getls(int newFd, Dir current){
                 sprintf(train.buf, "%s%s", train.buf, "\n");
                 count = 0;
             }
-            sprintf(train.buf, "%s%s%-15s", train.buf, " ", p->d_name);
+            sprintf(train.buf, "%s%-15s", train.buf, p->d_name);
             count++;
         }
     }
@@ -94,6 +98,7 @@ int getls(int newFd, Dir current){
     train.dataLen = strlen(train.buf);
     train.buf[train.dataLen] = '\0';
     train.dataLen += 1;
+    puts(train.buf);
     int ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
     return 0;
@@ -112,13 +117,16 @@ int getcd(int newFd, char* buf, pDir current){
     Train_t train;
     int ret;
     memset(&train, 0, sizeof(train));
-    //printf("%s\n", current->pathNow);
+    printf("will cd %s\n", buf);
+    printf("current path = %s\n", current->pathNow);
     int len = strlen(current->pathNow);
     int i, count = 0;
+    int flag;
     if(!strcmp(buf, "..")){
         if(0 == current->lvl) {
             printf("lvl == 0\n");
-            train.dataLen = -1;
+            flag = -1;
+            printf("set flag = -1\n");
         }
         else{
             for(i = len - 1; i >= 0 ; i--){
@@ -130,25 +138,49 @@ int getcd(int newFd, char* buf, pDir current){
             i++;
             current->pathNow[i] = '\0';
             current->lvl--;
-            train.dataLen = 0;
+            flag = 0;
         }
+    }
+    else if(!strcmp(buf, ".")){
+            flag = 0;
     }
     else {
         char tempPath[500] = {0};
         strcpy(tempPath, current->pathNow);
         sprintf(tempPath, "%s%s%s", tempPath, buf, "/");
+        printf("buf = %s\n", buf);
         printf("tempPath = %s\n", tempPath);
         if(judgeDir(tempPath)) {
             printf("dir!\n");
-            sprintf(current->pathNow, "%s%s%s", current->pathNow, buf, "/");
+            //sprintf(current->pathNow, "%s%s%s", current->pathNow, buf, "/");
+            memset(current->pathNow, 0, sizeof(current->pathNow));
+            strcpy(current->pathNow, tempPath);
             current->lvl++;
-            train.dataLen = 0;
+            flag = 0;
         }
         else{
-            train.dataLen = -2;
+            flag = -2;
         }
     }
-    ret = send(newFd, &train, 4, 0);
+    train.dataLen = sizeof(flag);
+    printf("train.dataLen = %d\n", train.dataLen);
+    printf("send flag = %d\n", flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    //printf("train.buf = %s\n", train.buf);
+    ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
     printf("%s\n", current->pathNow);
+}
+
+int getpwd(int newFd, Dir current){
+    char buf[1000];
+    char tempPath[1000];
+    Train_t train;
+    memset(buf, 0, sizeof(buf));
+    memset(tempPath, 0, sizeof(tempPath));
+    strcpy(tempPath, current.pathNow + 26);
+    train.dataLen = strlen(tempPath);
+    strcpy(train.buf,tempPath);
+    buf[train.dataLen++] = '\0';
+    send(newFd, &train, 4 + train.dataLen, 0);
 }

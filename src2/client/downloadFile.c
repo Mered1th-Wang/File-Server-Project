@@ -9,12 +9,14 @@ int downloadFile(int socketFd, char* name){
     off_t offset;
 
     //检查服务端是否存在该文件
-    recvCycle(socketFd, &dataLen, 4);//接收服务端打开文件的返回值
-    if(-1 == dataLen){
+    int flag;
+    recvCycle(socketFd, &dataLen, 4);
+    recvCycle(socketFd, &flag, dataLen);//接收服务端打开文件的返回值
+    if(-1 == flag){
         printf("No such file!\n");
         return -1;
     }
-    else if(-2 == dataLen){
+    else if(-2 == flag){
         printf("Directory download is not supported.\n");
         return -1;
     }
@@ -22,16 +24,19 @@ int downloadFile(int socketFd, char* name){
     //查看本地文件大小（断点续传）
     ret = stat(name, &filebuf);
     if(-1 == ret) {
-        train.dataLen = 0;
-        offset = train.dataLen;
+        offset = 0;
+        train.dataLen = sizeof(offset);
+        memcpy(train.buf, &offset, train.dataLen);
     }
     else {
-        offset = train.dataLen = filebuf.st_size;
+        offset = filebuf.st_size;
+        train.dataLen = sizeof(offset);
+        memcpy(train.buf, &offset, train.dataLen);
     }
     //printf("offset = %d\n", train.dataLen); //上次缓存的大小
     //printf("%s\n", name);
 
-    ret = send(socketFd, &train, 4, 0);// 发偏移量
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);// 发偏移量
 
     int fd = open(name, O_CREAT|O_RDWR, 0666);
     ERROR_CHECK(fd, -1, "open");

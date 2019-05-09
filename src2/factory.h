@@ -43,5 +43,5 @@ int gettime(char*, int);
 int Compute_file_md5(const char *, char *);
 int getcd(int, char*, pDir);
 int judgeDir(char*);
-
+int getpwd(int, Dir);
 #endif

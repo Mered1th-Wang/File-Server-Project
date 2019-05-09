@@ -1,5 +1,6 @@
 #ifndef __FUNCTION_H__
 #define __FUNCTION_H__
+#include <linux/tcp.h>
 #include <sys/epoll.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -56,6 +57,8 @@ int uploadFile(int, char*);
 int tcpInit_client(int*, char*, char*);
 int getdir();
 int login_client(int);
+int getcd(int);
+int getpwd(int);
 
 
 #endif

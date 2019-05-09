@@ -3,47 +3,57 @@
 int tran_file(int newFd, char* FILENAME, Dir current){
     Train_t train;
     int ret;
-    int offset;
+    int offset, dataLen;
     char pathName[100] = {0};
     sprintf(pathName, "%s%s", current.pathNow, FILENAME);
     printf("open %s\n", pathName);
     
     int fd = open(pathName, O_RDONLY);
     struct stat buf;
-    
+    int flag;
     if(-1 == fd){
         perror("open");
-        train.dataLen = -1;
-        ret = send(newFd, &train, 4, 0);
+        flag = -1;
+        train.dataLen = sizeof(flag);
+        memcpy(train.buf, &flag, train.dataLen);
+        ret = send(newFd, &train, 4 + train.dataLen, 0);
         ERROR_CHECK(ret, -1, "send");
         return -1;
     }
 
     fstat(fd, &buf);
     if(S_ISDIR(buf.st_mode)){
-        train.dataLen = -2;
-        ret = send(newFd, &train, 4, 0);
+        flag = -2;
+        train.dataLen = sizeof(flag);
+        memcpy(train.buf, &flag, train.dataLen);
+        ret = send(newFd, &train, 4 + train.dataLen, 0);
         ERROR_CHECK(ret, -1, "send");
         return -1;
     }
-    train.dataLen = 0;
-    ret = send(newFd, &train, 4, 0);
+    flag = 0;
+    train.dataLen = sizeof(flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
     
     //接收偏移量
-    recvCycle(newFd, &offset, 4);
+    recvCycle(newFd, &dataLen, 4);
+    recvCycle(newFd, &offset, dataLen);
 
     printf("offset = %d\n", offset);
     lseek(fd, offset, SEEK_SET);
 
     printf("buf.st_size = %ld\n", buf.st_size);
+    
+    off_t fileSize;
     if(offset == buf.st_size){
-        train.dataLen = 0;
+        fileSize = 0;
     }
     else{
-        train.dataLen = sizeof(buf.st_size - offset);
+        fileSize = sizeof(buf.st_size - offset);
     }
-    memcpy(train.buf, &buf.st_size, train.dataLen);
+    train.dataLen = sizeof(fileSize);
+    memcpy(train.buf, &fileSize, train.dataLen);
     //发文件大小
     ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");

@@ -12,6 +12,7 @@ void* thread_func(void *p)
     pNode_t pDelete;
     Train_t train;
     Dir current;
+    char tempPath[1000] = {0};
     while(1){
         pthread_mutex_lock(&pq->mutex);
         if(!pq->que_size){
@@ -28,9 +29,10 @@ void* thread_func(void *p)
         while(1){
             int dataLen, option;
             char buf[512] = {0};
-            ret = recvCycle(pDelete->new_fd, &train, 4);//接收命令
+            recvCycle(pDelete->new_fd, &dataLen, 4);
+            ret = recvCycle(pDelete->new_fd, &option, dataLen);//接收命令
             if(-1 == ret) break;
-            option = train.dataLen;
+            printf("recv option = %d\n", option);
             gettime(timeNow, 50);
             printf("%s -> excuted the commond, \"", name);
             if(1 == option){
@@ -41,6 +43,13 @@ void* thread_func(void *p)
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
                 getcd(pDelete->new_fd, buf, &current);
+
+                memset(tempPath, 0, sizeof(tempPath));
+                strcpy(tempPath, current.pathNow + 26);
+                train.dataLen = strlen(tempPath);
+                strcpy(train.buf,tempPath);
+                buf[train.dataLen++] = '\0';
+                send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
             else if(2 == option){
                 printf("%s\"\n", opt[option]);
@@ -78,14 +87,16 @@ void* thread_func(void *p)
             }
             else if(6 == option){
                 printf("%s\" \n", opt[option]);
-                memset(buf, 0, sizeof(buf));
                 //getcwd(buf, sizeof(buf));
                 //sprintf(buf, "%s%s%s%s", buf, "/", name, "/");
-                train.dataLen = strlen(current.pathNow);
-                strcpy(train.buf, current.pathNow);
-                buf[train.dataLen] = '\0';
-                train.dataLen++;
-                send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
+                getpwd(pDelete->new_fd, current);
+              //  memset(buf, 0, sizeof(buf));
+              //  memset(tempPath, 0, sizeof(tempPath));
+              //  strcpy(tempPath, current.pathNow + 26);
+              //  train.dataLen = strlen(tempPath);
+              //  strcpy(train.buf,tempPath);
+              //  buf[train.dataLen++] = '\0';
+              //  send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
             else printf("wrong input!\n");
         }
