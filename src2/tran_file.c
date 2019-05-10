@@ -6,7 +6,7 @@ int tran_file(int newFd, char* FILENAME, Dir current){
     int offset, dataLen;
     char pathName[100] = {0};
     sprintf(pathName, "%s%s", current.pathNow, FILENAME);
-    printf("open %s\n", pathName);
+    //printf("open %s\n", pathName);
     
     int fd = open(pathName, O_RDONLY);
     struct stat buf;
@@ -20,7 +20,6 @@ int tran_file(int newFd, char* FILENAME, Dir current){
         ERROR_CHECK(ret, -1, "send");
         return -1;
     }
-
     fstat(fd, &buf);
     if(S_ISDIR(buf.st_mode)){
         flag = -2;
@@ -40,27 +39,22 @@ int tran_file(int newFd, char* FILENAME, Dir current){
     recvCycle(newFd, &dataLen, 4);
     recvCycle(newFd, &offset, dataLen);
 
-    printf("offset = %d\n", offset);
+    //printf("recv offset = %d\n", offset);
     lseek(fd, offset, SEEK_SET);
 
-    printf("buf.st_size = %ld\n", buf.st_size);
+    //printf("buf.st_size = %ld\n", buf.st_size);
     
     off_t fileSize;
-    if(offset == buf.st_size){
-        fileSize = 0;
-    }
-    else{
-        fileSize = sizeof(buf.st_size - offset);
-    }
+    fileSize = buf.st_size - offset;
     train.dataLen = sizeof(fileSize);
     memcpy(train.buf, &fileSize, train.dataLen);
-    //发文件大小
+    //发文件剩余大小
     ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
-    //printf("send filesize = %d\n", train.dataLen);
-
-    if(0 == train.dataLen){
-        return 0;
+    //printf("send filesize = %ld\n", fileSize);
+    
+    if(fileSize <= 0){
+        return -1;
     }
     
     //发文件内容 

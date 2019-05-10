@@ -144,8 +144,9 @@ int main()
             memcpy(train.buf, &flag, train.dataLen);
             ret = send(socketFd, &train, 4 + train.dataLen, 0);
             ERROR_CHECK(ret, -1, "send");
+            memset(&train, 0 ,sizeof(train));
             recvCycle(socketFd, &train.dataLen, 4);
-            recvCycle(socketFd, &train.buf, train.dataLen);
+            recvCycle(socketFd, train.buf, train.dataLen);
             puts(train.buf);
             printf("---------------------------------\n");
         }

@@ -24,15 +24,15 @@ void* thread_func(void *p)
         }
         que_get(pq, &pDelete);//从队列里获取发任务的客户端的socketFd
         pthread_mutex_unlock(&pq->mutex);
-        login(pDelete, name, &current);
-        printf("%s\n", current.pathNow);
+            ret = login(pDelete, name, &current);
+            if(-1 == ret) break;
+            //printf("%s\n", current.pathNow);
         while(1){
             int dataLen, option;
             char buf[512] = {0};
-            recvCycle(pDelete->new_fd, &dataLen, 4);
-            ret = recvCycle(pDelete->new_fd, &option, dataLen);//接收命令
+            ret = recvCycle(pDelete->new_fd, &dataLen, 4);
             if(-1 == ret) break;
-            printf("recv option = %d\n", option);
+            ret = recvCycle(pDelete->new_fd, &option, dataLen);//接收命令
             gettime(timeNow, 50);
             printf("%s -> excuted the commond, \"", name);
             if(1 == option){
@@ -44,12 +44,10 @@ void* thread_func(void *p)
                 printf("%s\"\n", buf);
                 getcd(pDelete->new_fd, buf, &current);
 
-                memset(tempPath, 0, sizeof(tempPath));
-                strcpy(tempPath, current.pathNow + 26);
-                train.dataLen = strlen(tempPath);
-                strcpy(train.buf,tempPath);
-                buf[train.dataLen++] = '\0';
-                send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
+          //      memset(tempPath, 0, sizeof(tempPath));
+          //      strcpy(tempPath, current.pathNow + 26);
+          //      train.dataLen = strlen(tempPath);
+          //      send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
             else if(2 == option){
                 printf("%s\"\n", opt[option]);

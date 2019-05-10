@@ -8,7 +8,7 @@ int downloadFile(int socketFd, char* name){
     struct stat filebuf;
     off_t offset;
 
-    //检查服务端是否存在该文件
+    //接收flag返回值,检查服务端是否存在该文件
     int flag;
     recvCycle(socketFd, &dataLen, 4);
     recvCycle(socketFd, &flag, dataLen);//接收服务端打开文件的返回值
@@ -21,8 +21,9 @@ int downloadFile(int socketFd, char* name){
         return -1;
     }
 
-    //查看本地文件大小（断点续传）
+    //查看本地文件大小（断点续传）发送偏移量
     ret = stat(name, &filebuf);
+    //printf("open name = %s, Size = %ld\n", name, filebuf.st_size);
     if(-1 == ret) {
         offset = 0;
         train.dataLen = sizeof(offset);
@@ -37,19 +38,24 @@ int downloadFile(int socketFd, char* name){
     //printf("%s\n", name);
 
     ret = send(socketFd, &train, 4 + train.dataLen, 0);// 发偏移量
-
+    //printf("send offset = %ld\n", offset);
     int fd = open(name, O_CREAT|O_RDWR, 0666);
     ERROR_CHECK(fd, -1, "open");
-    lseek(fd, filebuf.st_size, SEEK_SET);
+    lseek(fd, offset, SEEK_SET);
     
     //接文件大小
     off_t fileSize = 0;
     recvCycle(socketFd, &dataLen, 4);
-    //printf("downloadFile filesize dataLen = %d\n", dataLen);
     recvCycle(socketFd, &fileSize, dataLen);
+    //printf("downloadFile filesize = %ld\n", fileSize);
     //printf("dataLen = %d, fileSize = %ld\n", dataLen, fileSize);   
-    if(fileSize == 0) return 0;
+    if(fileSize < 0) return -1;
+    else if(fileSize == 0) {
+        printf("File already exists.\n");
+        return -1;
+    }
 
+    //printf("recv fileSize = %ld\n", fileSize);
     //接受文件内容
     if(fileSize >= SIZE){
         //printf("ftruncate\n");
@@ -60,8 +66,8 @@ int downloadFile(int socketFd, char* name){
         ERROR_CHECK(ret, -1, "recvCycle");
 
         //接受结束标志
-        ret = recvCycle(socketFd, buf, 4);
-        ERROR_CHECK(ret, -1, "recvCycle");
+        ret = recvCycle(socketFd, &train.dataLen, 4);
+        
         munmap(pMap, fileSize);
         close(fd);
     }
@@ -77,7 +83,7 @@ int downloadFile(int socketFd, char* name){
                 CHECK_recvCycle(ret, -1);
                 write(fd, buf, dataLen);
             }
-            else  break;
+            else break;
         }
         close(fd);
     }

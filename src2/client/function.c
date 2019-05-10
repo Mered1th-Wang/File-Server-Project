@@ -31,10 +31,11 @@ int login_client(int socketFd)
     recvCycle(socketFd, &ret, 4);
     recvCycle(socketFd, &flag, ret);
     if(flag == 1){
-        printf("验证成功\n");
+        system("clear");
+        printf("login succeeded.\n");
     }
     else{
-        printf("验证失败\n");
+        printf("login failed.\n");
         return -1;
     }
     return 0;
@@ -63,11 +64,13 @@ int getcd(int socketFd){
     ret = send(socketFd, &train, 4 + train.dataLen, 0);//目录名
     ERROR_CHECK(ret, -1, "send");
     
-    printf("文件名%s发送成功\n", train.buf);
-    recvCycle(socketFd, &flag, 4);
-    printf("train.dataLen = %d\n", train.dataLen);
+    //printf("name : %s send\n", train.buf);
+    memset(&train, 0, sizeof(train));
+    recvCycle(socketFd, &train.dataLen, 4);
+    recvCycle(socketFd, &flag, train.dataLen);
+    //printf("train.dataLen = %d\n", train.dataLen);
     //recvCycle(socketFd, &flag, train.dataLen);
-    printf("recv flag = %d\n", flag);
+    //printf("recv flag = %d\n", flag);
     if(flag == -1){
         printf("Failed! Already root directory.\n");
         printf("---------------------------------\n");
@@ -77,11 +80,12 @@ int getcd(int socketFd){
         printf("---------------------------------\n");
     }
     else{
-        memset(&train, 0, sizeof(train));
-        recvCycle(socketFd, &train.dataLen, 4);
-        recvCycle(socketFd, buf, train.dataLen);
-        setbuf(stdin, NULL);
-        puts(buf);
+     //   memset(&train, 0, sizeof(train));
+     //   recvCycle(socketFd, &train.dataLen, 4);
+     //   recvCycle(socketFd, buf, train.dataLen);
+     //   setbuf(stdin, NULL);
+     //   puts(buf);
+        printf("cd finish.\n");
         printf("---------------------------------\n");
     }
     return 0;

@@ -9,7 +9,7 @@ int login(pNode_t pDelete, char *name, pDir current)
     //验证登录
     //接收用户名
     recvCycle(pDelete->new_fd, &train.dataLen, 4);
-    recvCycle(pDelete->new_fd, &train.buf, train.dataLen);
+    recvCycle(pDelete->new_fd, train.buf, train.dataLen);
     strcpy(name, train.buf);
     //查数据库对应用户名的salt, 并发给客户端
     memset(&info, 0, sizeof(info));
@@ -20,8 +20,9 @@ int login(pNode_t pDelete, char *name, pDir current)
 
     //接收crypt
     recvCycle(pDelete->new_fd, &train.dataLen, 4);
-    recvCycle(pDelete->new_fd, &train.buf, train.dataLen);
-
+    ret = recvCycle(pDelete->new_fd, train.buf, train.dataLen);
+    //printf("recv crypt_code = %s\n", train.buf);
+    if(-1 == ret) return -1;
     int flag;
     if(!strcmp(train.buf, info.crypt_code)){
         gettime(timeNow, 50);
@@ -45,6 +46,7 @@ int login(pNode_t pDelete, char *name, pDir current)
         train.dataLen = sizeof(flag);
         memcpy(train.buf, &flag, train.dataLen);
         send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
+        return -1;
     }
     return 0;
 }
