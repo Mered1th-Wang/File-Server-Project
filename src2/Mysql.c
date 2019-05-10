@@ -41,6 +41,3 @@ int login_query(char* username, pUserInfo_t info)
 	return 0;
 }
 
-
-
-

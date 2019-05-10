@@ -59,6 +59,8 @@ int getdir();
 int login_client(int);
 int getcd(int);
 int getpwd(int);
-
-
+int gets(int);
+int putsfile(int);
+int removefile(int);
+int getls(int);
 #endif

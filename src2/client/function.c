@@ -63,7 +63,7 @@ int getcd(int socketFd){
     strcpy(train.buf, buf);
     ret = send(socketFd, &train, 4 + train.dataLen, 0);//目录名
     ERROR_CHECK(ret, -1, "send");
-    
+
     //printf("name : %s send\n", train.buf);
     memset(&train, 0, sizeof(train));
     recvCycle(socketFd, &train.dataLen, 4);
@@ -80,11 +80,11 @@ int getcd(int socketFd){
         printf("---------------------------------\n");
     }
     else{
-     //   memset(&train, 0, sizeof(train));
-     //   recvCycle(socketFd, &train.dataLen, 4);
-     //   recvCycle(socketFd, buf, train.dataLen);
-     //   setbuf(stdin, NULL);
-     //   puts(buf);
+        //   memset(&train, 0, sizeof(train));
+        //   recvCycle(socketFd, &train.dataLen, 4);
+        //   recvCycle(socketFd, buf, train.dataLen);
+        //   setbuf(stdin, NULL);
+        //   puts(buf);
         printf("cd finish.\n");
         printf("---------------------------------\n");
     }
@@ -106,6 +106,97 @@ int getpwd(int socketFd){
     recvCycle(socketFd, &train.dataLen, 4);
     recvCycle(socketFd, buf, train.dataLen);
     puts(buf);
+    printf("---------------------------------\n");
+    return 0;
+}
+
+int gets(int socketFd){
+    char buf[1000];
+    int flag, ret;
+    Train_t train;
+    memset(buf, 0, sizeof(buf));
+    scanf("%s", buf);
+    flag = 4;
+    train.dataLen = sizeof(flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);//发命令
+    ERROR_CHECK(ret, -1, "send");
+
+    train.dataLen = strlen(buf);
+    strcpy(train.buf, buf);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);//文件名
+    ERROR_CHECK(ret, -1, "send");
+
+    ret = downloadFile(socketFd, buf);
+    if(!ret) printf("gets %s OK!\n", buf);
+    else printf("gets %s FAILED!\n", buf);                
+    printf("---------------------------------\n");
+    return 0;
+}
+
+int putsfile(int socketFd){
+    char buf[1000];
+    int flag, ret;
+    Train_t train;
+    memset(buf, 0, sizeof(buf));
+    scanf("%s", buf);
+    flag = 3;
+    train.dataLen = sizeof(flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);
+    ERROR_CHECK(ret, -1, "send");
+    //memset(md5sum, 0, sizeof(md5sum));
+    //Compute_file_md5(buf, md5sum);
+    //printf("%s\n", md5sum);
+    train.dataLen = strlen(buf);
+    strcpy(train.buf, buf);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);//文件名
+    ERROR_CHECK(ret, -1, "send");
+    ret = uploadFile(socketFd, buf);
+    if(!ret) printf("puts %s OK!\n", buf);
+    else printf("puts %s FAILED!\n", buf);                
+    printf("---------------------------------\n");
+    return 0;
+}
+int removefile(int socketFd){
+    char buf[1000];
+    int flag, ret;
+    Train_t train;
+    memset(buf, 0, sizeof(buf));
+    scanf("%s", buf);
+    flag = 5;
+    train.dataLen = sizeof(flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);
+    ERROR_CHECK(ret, -1, "send");//发命令
+
+    train.dataLen = strlen(buf);
+    strcpy(train.buf, buf);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);
+    ERROR_CHECK(ret, -1, "send");//发文件名
+
+    recvCycle(socketFd ,&ret, 4);
+    recvCycle(socketFd, &flag, ret);
+    if(0 == flag) printf("remove %s OK!\n", buf);
+    else printf("remove %s failed!\n", buf);
+    printf("---------------------------------\n");
+    return 0;
+}
+
+int getls(int socketFd){
+    char buf[1000];
+    int flag, ret;
+    Train_t train;
+    memset(buf, 0, sizeof(buf));
+    flag = 2;
+    train.dataLen = sizeof(flag);
+    memcpy(train.buf, &flag, train.dataLen);
+    ret = send(socketFd, &train, 4 + train.dataLen, 0);
+    ERROR_CHECK(ret, -1, "send");
+    memset(&train, 0 ,sizeof(train));
+    recvCycle(socketFd, &train.dataLen, 4);
+    recvCycle(socketFd, train.buf, train.dataLen);
+    puts(train.buf);
     printf("---------------------------------\n");
     return 0;
 }

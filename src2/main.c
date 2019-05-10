@@ -10,9 +10,9 @@ void* thread_func(void *p)
     pFactory_t pf = (pFactory_t)p;
     pque_t pq = &pf->que;
     pNode_t pDelete;
-    Train_t train;
     Dir current;
-    char tempPath[1000] = {0};
+    int dataLen, option;
+    char buf[512] = {0};
     while(1){
         pthread_mutex_lock(&pq->mutex);
         if(!pq->que_size){
@@ -24,12 +24,10 @@ void* thread_func(void *p)
         }
         que_get(pq, &pDelete);//从队列里获取发任务的客户端的socketFd
         pthread_mutex_unlock(&pq->mutex);
-            ret = login(pDelete, name, &current);
-            if(-1 == ret) break;
-            //printf("%s\n", current.pathNow);
+        ret = login(pDelete, name, &current);
+        if(-1 == ret) break;
+        printf("%s\n", current.pathNow);
         while(1){
-            int dataLen, option;
-            char buf[512] = {0};
             ret = recvCycle(pDelete->new_fd, &dataLen, 4);
             if(-1 == ret) break;
             ret = recvCycle(pDelete->new_fd, &option, dataLen);//接收命令
@@ -43,11 +41,6 @@ void* thread_func(void *p)
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
                 getcd(pDelete->new_fd, buf, &current);
-
-          //      memset(tempPath, 0, sizeof(tempPath));
-          //      strcpy(tempPath, current.pathNow + 26);
-          //      train.dataLen = strlen(tempPath);
-          //      send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
             else if(2 == option){
                 printf("%s\"\n", opt[option]);
@@ -70,7 +63,6 @@ void* thread_func(void *p)
                 recvCycle(pDelete->new_fd, &dataLen, 4);
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-                
                 tran_file(pDelete->new_fd, buf, current);//发文件
             }
             else if(5 == option){
@@ -85,16 +77,7 @@ void* thread_func(void *p)
             }
             else if(6 == option){
                 printf("%s\" \n", opt[option]);
-                //getcwd(buf, sizeof(buf));
-                //sprintf(buf, "%s%s%s%s", buf, "/", name, "/");
                 getpwd(pDelete->new_fd, current);
-              //  memset(buf, 0, sizeof(buf));
-              //  memset(tempPath, 0, sizeof(tempPath));
-              //  strcpy(tempPath, current.pathNow + 26);
-              //  train.dataLen = strlen(tempPath);
-              //  strcpy(train.buf,tempPath);
-              //  buf[train.dataLen++] = '\0';
-              //  send(pDelete->new_fd, &train, 4 + train.dataLen, 0);
             }
             else printf("wrong input!\n");
         }
@@ -142,12 +125,12 @@ int main()
     ERROR_CHECK(config, NULL, "fopen");
     fscanf(config, "%s%s%d%d", ip, port, &thread_num, &capacity);
     factory_t f;
-	factory_init(&f, thread_num, capacity);
-	factory_start(&f);//创建线程
+    factory_init(&f, thread_num, capacity);
+    factory_start(&f);
     int sfd;
-    pque_t pq = &f.que;//锁在f里，为方便操作，定义 一个pque_t pq指向f.que
-    tcpInit(&sfd, ip, port, thread_num); //tcp listen;
-    
+    pque_t pq = &f.que;
+    tcpInit(&sfd, ip, port, thread_num); 
+
     int epfd = epoll_create(1);
     struct epoll_event event, evs[2];
     event.events = EPOLLIN;
