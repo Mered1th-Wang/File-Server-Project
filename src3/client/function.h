@@ -49,30 +49,6 @@ typedef struct train{
     char buf[1000];
 }Train_t;
 
-typedef struct node{
-    int new_fd;
-    struct node *pNext;
-    int option;
-    char buf[1000];
-}Node_t, *pNode_t;
-
-typedef struct{
-    pNode_t que_head, que_tail;
-    int que_capacity;
-    int que_size;
-    pthread_mutex_t mutex;
-}que_t, *pque_t;
-
-typedef struct {
-    pthread_t pid;
-    pthread_cond_t cond;
-    que_t que;
-}factory_t, *pFactory_t;
-
-typedef struct{
-    int lvl;
-    char pathNow[100];
-}Dir, *pDir;
 
 
 int recvCycle(int, void*, int);
@@ -80,22 +56,11 @@ int downloadFile(int, char*);
 int uploadFile(int, char*);
 int tcpInit_client(int*, char*, char*);
 int getdir();
-int login_client(int, char*);
+int login_client(int);
 int getcd(int);
 int getpwd(int);
-int gets(int, char*);
-int putsfile(int, char*);
+int gets(int);
+int putsfile(int);
 int removefile(int);
 int getls(int);
-
-void que_init(pque_t, int);
-int que_get(pque_t, pNode_t*);
-void que_insert(pque_t, pNode_t);
-void* thread_func(void*);
-void factory_init(pFactory_t, int);
-void factory_start(pFactory_t);
-int gettime(char, int);
-int query_token(char*);
-int login_childclient(int, char *);
-
 #endif

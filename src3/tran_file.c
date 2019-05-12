@@ -1,15 +1,12 @@
 #include "factory.h"
 
-int tran_file(int newFd, char* FILENAME, char* name){
-    Dir current;
-    query_current(name, &current);
-    printf("#########current.pathNow = %s\n", current.pathNow);
+int tran_file(int newFd, char* FILENAME, Dir current){
     Train_t train;
     int ret;
     int offset, dataLen;
     char pathName[100] = {0};
     sprintf(pathName, "%s%s", current.pathNow, FILENAME);
-    printf("open %s\n", pathName);
+    //printf("open %s\n", pathName);
     
     int fd = open(pathName, O_RDONLY);
     struct stat buf;
@@ -80,9 +77,7 @@ int tran_file(int newFd, char* FILENAME, char* name){
 
 #define CHECK_recvCycle(ret, retval) {if(ret == retval) {printf("\n LINE = %d, Server is update!\n", __LINE__); break;}} 
 
-int tran_file2(int newFd, char *FILENAME, char *name){
-    Dir current;
-    query_current(name, &current);
+int tran_file2(int newFd, char *FILENAME, Dir current){
 	int dataLen, ret;
     char buf[1000] = {0};
     
@@ -93,7 +88,6 @@ int tran_file2(int newFd, char *FILENAME, char *name){
     char pathName[100] = {0};
     sprintf(pathName, "%s%s", current.pathNow, FILENAME);
     int fd = open(pathName, O_CREAT|O_RDWR, 0666);
-    printf("pathName = %s\n", pathName);
 	ERROR_CHECK(fd, -1, "open");
     
     //接文件大小

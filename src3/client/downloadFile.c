@@ -38,16 +38,16 @@ int downloadFile(int socketFd, char* name){
     //printf("%s\n", name);
 
     ret = send(socketFd, &train, 4 + train.dataLen, 0);// 发偏移量
-    printf("send offset = %ld\n", offset);
+    //printf("send offset = %ld\n", offset);
     int fd = open(name, O_CREAT|O_RDWR, 0666);
     ERROR_CHECK(fd, -1, "open");
     lseek(fd, offset, SEEK_SET);
- 
+    
     //接文件大小
     off_t fileSize = 0;
     recvCycle(socketFd, &dataLen, 4);
     recvCycle(socketFd, &fileSize, dataLen);
-    printf("downloadFile filesize = %ld\n", fileSize);
+    //printf("downloadFile filesize = %ld\n", fileSize);
     //printf("dataLen = %d, fileSize = %ld\n", dataLen, fileSize);   
     if(fileSize < 0) return -1;
     else if(fileSize == 0) {

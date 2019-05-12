@@ -1,6 +1,6 @@
 #include "function.h"
 
-int login_client(int socketFd, char *token)
+int login_client(int socketFd)
 {
     Train_t train;
     char username[20] = {0};
@@ -30,36 +30,14 @@ int login_client(int socketFd, char *token)
     int flag, ret;
     recvCycle(socketFd, &ret, 4);
     recvCycle(socketFd, &flag, ret);
-
     if(flag == 1){
         system("clear");
         printf("login succeeded.\n");
-
-        memset(&train, 0 ,sizeof(train));
-        //接收token
-        recvCycle(socketFd, &train.dataLen, 4);
-        recvCycle(socketFd, train.buf, train.dataLen);
-        strcpy(token, train.buf);
-        printf("recv token = %s\n", token);
     }
     else{
         printf("login failed.\n");
         return -1;
     }
-    return 0;
-}
-
-
-int login_childclient(int socketFd, char *token)
-{
-    int ret;
-    Train_t train;
-    //发送token值
-    train.dataLen = strlen(token);
-    strcpy(train.buf, token);
-    send(socketFd, &train, 4 + train.dataLen, 0);
-    ret = query_token(token);
-    
     return 0;
 }
 
@@ -132,9 +110,12 @@ int getpwd(int socketFd){
     return 0;
 }
 
-int gets(int socketFd, char *buf){
+int gets(int socketFd){
+    char buf[1000];
     int flag, ret;
     Train_t train;
+    memset(buf, 0, sizeof(buf));
+    scanf("%s", buf);
     flag = 4;
     train.dataLen = sizeof(flag);
     memcpy(train.buf, &flag, train.dataLen);
@@ -153,9 +134,12 @@ int gets(int socketFd, char *buf){
     return 0;
 }
 
-int putsfile(int socketFd, char* buf){
+int putsfile(int socketFd){
+    char buf[1000];
     int flag, ret;
     Train_t train;
+    memset(buf, 0, sizeof(buf));
+    scanf("%s", buf);
     flag = 3;
     train.dataLen = sizeof(flag);
     memcpy(train.buf, &flag, train.dataLen);
@@ -216,36 +200,3 @@ int getls(int socketFd){
     printf("---------------------------------\n");
     return 0;
 }
-
-void que_init(pque_t pq, int capacity){
-    memset(pq, 0, sizeof(que_t));
-    pq->que_capacity = capacity;
-    pthread_mutex_init(&pq->mutex, NULL);
-}
-
-int que_get(pque_t pq, pNode_t *ppCur){
-    if(0 == pq->que_size){
-        return -1;
-    }
-    else{//头部删除
-        *ppCur = pq->que_head;
-        pq->que_head = pq->que_head->pNext;
-        if(NULL == pq->que_head){
-            pq->que_tail = NULL;
-        }
-        pq->que_size--;
-        return 0;
-    }
-}
-
-void que_insert(pque_t pq, pNode_t pNew){
-    if(NULL == pq->que_tail){
-        pq->que_head = pq->que_tail = pNew;
-    }
-    else{//尾插
-        pq->que_tail->pNext = pNew;
-        pq->que_tail = pNew;
-    }
-    pq->que_size++;
-}
-

@@ -1,10 +1,11 @@
 #include "factory.h"
 
+const char *opt[] = {"", "cd", "ls", "puts", "gets", "remove", "pwd", "wrong input"};
+char timeNow[50] = {0};
+char name[50] = {0};
+
 void* thread_func(void *p)
 {
-    char timeNow[50] = {0};
-    char name[50] = {0};
-    const char *opt[] = {"", "cd", "ls", "puts", "gets", "remove", "pwd", "wrong input"};
     int ret;
     pFactory_t pf = (pFactory_t)p;
     pque_t pq = &pf->que;
@@ -25,7 +26,7 @@ void* thread_func(void *p)
         pthread_mutex_unlock(&pq->mutex);
         ret = login(pDelete, name, &current);
         if(-1 == ret) break;
-        //printf("%s\n", current.pathNow);
+        printf("%s\n", current.pathNow);
         while(1){
             ret = recvCycle(pDelete->new_fd, &dataLen, 4);
             if(-1 == ret) break;
@@ -39,13 +40,13 @@ void* thread_func(void *p)
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-                getcd(pDelete->new_fd, buf, name, &current);
+                getcd(pDelete->new_fd, buf, &current);
             }
             else if(2 == option){
                 printf("%s\"\n", opt[option]);
                 getls(pDelete->new_fd, current);
             }
-            else if(3 == option){ // puts
+            else if(3 == option){
                 //接收文件名
                 printf("%s ", opt[option]);
                 memset(buf, 0, sizeof(buf));
@@ -53,17 +54,16 @@ void* thread_func(void *p)
                 if(-1 == ret) break;
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-                tran_file2(pDelete->new_fd, buf, name);//接文件
+                tran_file2(pDelete->new_fd, buf, current);//接文件
             }
-            else if(4 == option){ // gets
+            else if(4 == option){
                 //接收文件名
                 printf("%s ", opt[option]);
                 memset(buf, 0, sizeof(buf));
                 recvCycle(pDelete->new_fd, &dataLen, 4);
                 recvCycle(pDelete->new_fd, buf, dataLen);
                 printf("%s\"\n", buf);
-                //printf("##@@@@@@@@@name = %s\n", name);
-                tran_file(pDelete->new_fd, buf, name);//发文件
+                tran_file(pDelete->new_fd, buf, current);//发文件
             }
             else if(5 == option){
                 //接收文件名
@@ -83,11 +83,8 @@ void* thread_func(void *p)
         }
         free(pDelete);
         pDelete = NULL;
-        if(strlen(name) < 20){
-            gettime(timeNow, 50);
-            printf("%s connection closed.\n", name);
-
-        }
+        gettime(timeNow, 50);
+        printf("%s connection closed.\n", name);
     }
 }
 
@@ -105,7 +102,6 @@ void sigfunc_exit(int sigNum){
 
 int main()
 {
-    char timeNow[50] = {0};
     pipe(exit_fds);
     while(fork()){
         //close(exit_fds[0]);

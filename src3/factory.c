@@ -112,7 +112,7 @@ int gettime(char timeNow[], int size){
     return 0;
 }
 
-int getcd(int newFd, char* buf, char* name, pDir current){
+int getcd(int newFd, char* buf, pDir current){
     Train_t train;
     int ret;
     memset(&train, 0, sizeof(train));
@@ -171,7 +171,6 @@ int getcd(int newFd, char* buf, char* name, pDir current){
     ret = send(newFd, &train, 4 + train.dataLen, 0);
     ERROR_CHECK(ret, -1, "send");
     //printf("%s\n", current->pathNow);
-    update_dir(name, current->pathNow);
 }
 
 int getpwd(int newFd, Dir current){
