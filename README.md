@@ -146,3 +146,9 @@ create table Account( ID int NOT NULL AUTO_INCREMENT,
     通信。虽然简化了操作，但不可避免会有安全性问题。
 
 
+    完成超时等待机制。
+
+
+    四期功能全部完毕。
+
+***
