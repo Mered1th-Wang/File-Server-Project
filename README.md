@@ -138,7 +138,7 @@ create table Account( ID int NOT NULL AUTO_INCREMENT,
         token值由用户名/密码/时间结合设计产生，主线程在登录后在服务端产生token值保存至数据库，
     同时将TokeN值发送至客户端，由子线程接收，并让子线程登录即可。
 
-5.12
+## 5.12
         完成四期gets与puts分离，增加了数据库中Account新列current，用于保存当前操作路径，目的是当
     子线程完成登录进行gets和puts时保持与主线程操作的是同一个路径。
     这里给子线程开了权限让子线程能查询数据库，一是为了子线程与主线程同步当前操作路径current，
