@@ -4,9 +4,10 @@
 int main()
 {
     char s[] = "abc";
-    char filename[50] = {0};
-    sprintf(filename, "%s%s", "./file/", s);
-    printf("%s\n", filename);
+    char filename[50] = "567";
+    //sprintf(filename, "%s%s", "./file/", s);
+    strcat(s, filename);
+    printf("%s\n", s);
 
     return 0;
 }

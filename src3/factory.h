@@ -21,6 +21,7 @@ typedef struct{
 typedef struct{
     char salt[20];
     char crypt_code[512];
+    char token[100];
 }UserInfo_t, *pUserInfo_t;
 
 typedef struct{
@@ -32,8 +33,8 @@ void* thread_func(void*);
 void factory_init(pFactory_t, int, int);
 void factory_start(pFactory_t);
 int tcpInit(int*, char*, char*, int);
-int tran_file(int, char*, Dir);//download
-int tran_file2(int, char*, Dir);//upload
+int tran_file(int, char*, char*);//download
+int tran_file2(int, char*, char*);//upload
 int recvCycle(int, void*, int);
 void removeFile(int, char*, Dir);
 int getls(int, Dir);
@@ -41,7 +42,13 @@ int login_query(char*, pUserInfo_t);
 int login(pNode_t, char*, pDir);
 int gettime(char*, int);
 int Compute_file_md5(const char *, char *);
-int getcd(int, char*, pDir);
+int getcd(int, char*, char*, pDir);
 int judgeDir(char*);
 int getpwd(int, Dir);
+int create_token(char *, char *);
+int update_mysql(char *, char *);
+int childlogin(char*, pDir);
+int update_dir(char *, char *);
+int query_current(char*, pDir);
+
 #endif
